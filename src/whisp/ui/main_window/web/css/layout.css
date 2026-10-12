@@ -1,0 +1,311 @@
+/* ---------- App shell ---------- */
+
+#app {
+  height: 100%;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  height: 100%;
+}
+
+.app.is-onboarding {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.boot-error {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: 32px;
+  text-align: center;
+  color: var(--text-2);
+}
+
+/* ---------- Sidebar ---------- */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 14px 12px 12px;
+  border-right: 1px solid var(--border);
+  background: var(--sidebar-bg, var(--bg));
+}
+
+:root[data-theme="light"] .sidebar {
+  --sidebar-bg: #f3f3f6;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 8px;
+  margin-bottom: 14px;
+}
+
+.brand img {
+  width: 26px;
+  height: 26px;
+}
+
+.brand-name {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.nav {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--r-control);
+  color: var(--text-2);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  transition:
+    background-color var(--fast) var(--ease),
+    color var(--fast) var(--ease);
+}
+
+.nav-item svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text-3);
+  transition: color var(--fast) var(--ease);
+}
+
+.nav-item:hover {
+  color: var(--text-1);
+  background: var(--nav-hover, rgba(255, 255, 255, 0.035));
+}
+
+:root[data-theme="light"] .nav-item:hover {
+  --nav-hover: rgba(12, 12, 20, 0.04);
+}
+
+.nav-item[aria-current="page"] {
+  color: var(--text-1);
+  background: var(--nav-active);
+  box-shadow: var(--nav-active-shadow);
+}
+
+.nav-item[aria-current="page"] svg {
+  color: var(--text-1);
+}
+
+.nav-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  width: 2px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--opal-vertical);
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.45);
+  transform: translateY(var(--y, 9px));
+  transition: transform 260ms var(--ease-out);
+  pointer-events: none;
+}
+
+.sidebar-spacer {
+  flex: 1;
+}
+
+.engine-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  box-shadow: var(--shadow-card);
+  text-align: left;
+  transition:
+    background-color var(--fast) var(--ease),
+    border-color var(--fast) var(--ease);
+}
+
+.engine-chip:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.engine-chip-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+.engine-chip-title {
+  display: block;
+  overflow: hidden;
+  color: var(--text-1);
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.engine-chip-sub {
+  display: block;
+  overflow: hidden;
+  color: var(--text-3);
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.engine-chip > svg {
+  width: 14px;
+  height: 14px;
+  color: var(--text-3);
+}
+
+/* ---------- Main column ---------- */
+
+.main {
+  position: relative;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  container-type: inline-size;
+  scrollbar-gutter: stable;
+  /* A faint wash of light at the top of each page: depth without colour. */
+  background: radial-gradient(ellipse 60% 280px at 50% -80px, var(--atmosphere), transparent 72%) no-repeat;
+  background-attachment: local;
+}
+
+:root[data-theme="dark"] {
+  --atmosphere: rgba(255, 255, 255, 0.035);
+}
+
+:root[data-theme="light"] {
+  --atmosphere: rgba(255, 255, 255, 0.9);
+}
+
+.page {
+  max-width: calc(var(--content-width) + 2 * var(--page-pad));
+  margin: 0 auto;
+  padding: 36px var(--page-pad) 72px;
+  animation: rise-in 280ms var(--ease-out) both;
+  --page-pad: 40px;
+}
+
+@container (max-width: 720px) {
+  .page {
+    --page-pad: 32px;
+  }
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  line-height: 1.2;
+}
+
+.page-desc {
+  margin-top: 6px;
+  max-width: 560px;
+  font-size: 14px;
+  color: var(--text-2);
+  text-wrap: pretty;
+}
+
+.page-actions {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stack-lg {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.section-label {
+  margin: 0 0 10px 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* ---------- Tabs ---------- */
+
+.tabs {
+  display: flex;
+  gap: 22px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tab {
+  position: relative;
+  flex: none;
+  height: 38px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+  transition: color var(--fast) var(--ease);
+}
+
+.tab:hover {
+  color: var(--text-1);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--text-1);
+}
+
+.tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text-1);
+}
+
+.tab:focus-visible {
+  outline-offset: -2px;
+  border-radius: 6px;
+}

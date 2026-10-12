@@ -1,0 +1,92 @@
+[build-system]
+requires = ["hatchling>=1.27"]  # 1.27 reads license-files as a list (PEP 639)
+build-backend = "hatchling.build"
+
+[project]
+name = "whisp"
+dynamic = ["version"]
+description = "Fast, private, local voice dictation for Windows. Hold a key, speak, and clean text appears wherever you type."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
+requires-python = ">=3.12,<3.14"
+authors = [{ name = "Whisp contributors" }]
+keywords = ["dictation", "speech-to-text", "voice typing", "whisper", "parakeet", "windows", "offline"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: Microsoft :: Windows :: Windows 10",
+    "Operating System :: Microsoft :: Windows :: Windows 11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+dependencies = [
+    "PySide6-Essentials>=6.12,<6.13",
+    "PySide6-WebEngine>=6.12,<6.13",
+    "numpy>=2.0",
+    "sounddevice>=0.5.2",
+    "onnxruntime-gpu>=1.31",
+    "onnx-asr>=0.12",
+    "pydantic>=2.10",
+    "httpx>=0.28",
+]
+
+[project.optional-dependencies]
+# NVIDIA CUDA/cuDNN runtime libraries from PyPI, for GPU acceleration in a dev
+# environment. Packaged builds download the same files on demand instead: the
+# pins are the GPU runtime pack's (RUNTIME_WHEELS in src/whisp/core/asr/gpu.py;
+# a test keeps them in step), so they also always have Windows wheels.
+cuda = [
+    "onnxruntime-gpu[cuda,cudnn]>=1.31",
+    "nvidia-cuda-runtime==13.4.92",
+    "nvidia-cublas==13.8.0.4",
+    "nvidia-nvjitlink==13.4.92",
+    "nvidia-cufft==12.4.0.43",
+    "nvidia-curand==10.4.4.72",
+    "nvidia-cuda-nvrtc==13.4.92",
+    "nvidia-cudnn-cu13==9.27.0.42",
+]
+
+[project.gui-scripts]
+whisp = "whisp.app.main:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-qt>=4.4",
+    "ruff>=0.9",
+    "soundfile>=0.13",
+    "pyinstaller>=6.11",
+]
+
+[tool.uv]
+# Whisp is a Windows app; lock only for Windows.
+environments = ["sys_platform == 'win32'"]
+
+[tool.hatch.version]
+path = "src/whisp/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/whisp"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]  # typographic punctuation in user-facing strings is intentional
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+qt_api = "pyside6"
+addopts = "-ra -m 'not gpu and not models and not desktop'"
+markers = [
+    "gpu: needs an NVIDIA GPU with the CUDA runtime available",
+    "models: needs speech models downloaded (slow; uses the network on first run)",
+    "desktop: drives the real Windows desktop (keyboard, clipboard, foreground window)",
+]
+filterwarnings = ["ignore::DeprecationWarning:onnxruntime.*"]

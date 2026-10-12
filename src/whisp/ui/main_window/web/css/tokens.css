@@ -1,0 +1,132 @@
+/* Design tokens. Values mirror docs/DESIGN.md; see the notes where they differ. */
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  --font: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+
+  --opal: linear-gradient(100deg, #67e8f9 0%, #818cf8 35%, #c084fc 65%, #f9a8d4 100%);
+  --opal-vertical: linear-gradient(0deg, #67e8f9 0%, #818cf8 35%, #c084fc 65%, #f9a8d4 100%);
+  --ice: #67e8f9;
+  --periwinkle: #818cf8;
+  --orchid: #c084fc;
+  --blush: #f9a8d4;
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --fast: 120ms;
+  --medium: 200ms;
+  --slow: 320ms;
+
+  --r-control: 8px;
+  --r-card: 12px;
+  --r-panel: 16px;
+  --r-pill: 999px;
+
+  --sidebar-width: 232px;
+  --content-width: 880px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b0b0e;
+  --surface-1: #121216;
+  --surface-2: #18181e;
+  --surface-3: #202028;
+  --surface-raised: #1c1c23;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --text-1: #f4f4f6;
+  --text-2: #b3b3bd;
+  /* DESIGN.md says #7B7B86, which is 4.47:1 on cards; this passes WCAG AA (4.9:1). */
+  --text-3: #82828d;
+
+  --accent: #8b9bff;
+  --accent-soft: rgba(139, 155, 255, 0.16);
+  --accent-ring: rgba(139, 155, 255, 0.45);
+  --on-inverse: #0b0b0e;
+  --inverse: #f4f4f6;
+
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --success-text: #4ade80;
+  --warning-text: #fbbf24;
+  --danger-text: #f87171;
+  --success-soft: rgba(74, 222, 128, 0.12);
+  --warning-soft: rgba(251, 191, 36, 0.12);
+  --danger-soft: rgba(248, 113, 113, 0.12);
+
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.035) inset;
+  --shadow-pop: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 18px 48px rgba(0, 0, 0, 0.55);
+  --key-inset: inset 0 -1px 0 rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --nav-active: var(--surface-2);
+  --nav-active-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  --seg-active: #26262f;
+  --seg-active-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --chart-bar: rgba(255, 255, 255, 0.13);
+  --chart-bar-hover: rgba(255, 255, 255, 0.3);
+  --track: rgba(255, 255, 255, 0.08);
+  --scrollbar: rgba(255, 255, 255, 0.1);
+  --scrollbar-hover: rgba(255, 255, 255, 0.18);
+  --backdrop: rgba(4, 4, 6, 0.62);
+  --glow-strength: 0.55;
+  --selection: rgba(139, 155, 255, 0.32);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f7f7f9;
+  --surface-1: #ffffff;
+  --surface-2: #f1f1f5;
+  --surface-3: #e9e9ef;
+  --surface-raised: #ffffff;
+  --border: rgba(12, 12, 20, 0.08);
+  --border-strong: rgba(12, 12, 20, 0.14);
+  --text-1: #0e0e12;
+  --text-2: #4a4a55;
+  /* DESIGN.md says #8A8A96, which is 3.4:1 on white; this passes WCAG AA (5.3:1). */
+  --text-3: #6b6b77;
+
+  --accent: #5b63e6;
+  --accent-soft: rgba(91, 99, 230, 0.1);
+  --accent-ring: rgba(91, 99, 230, 0.35);
+  --on-inverse: #ffffff;
+  --inverse: #0e0e12;
+
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  /* Status colours as text need to be a step darker on white to pass AA. */
+  --success-text: #15803d;
+  --warning-text: #b45309;
+  --danger-text: #c42121;
+  --success-soft: rgba(22, 163, 74, 0.1);
+  --warning-soft: rgba(217, 119, 6, 0.1);
+  --danger-soft: rgba(220, 38, 38, 0.08);
+
+  --shadow: 0 1px 2px rgba(16, 16, 24, 0.06), 0 8px 24px rgba(16, 16, 24, 0.08);
+  --shadow-card: 0 1px 2px rgba(16, 16, 24, 0.04);
+  --shadow-pop: 0 1px 2px rgba(16, 16, 24, 0.08), 0 18px 48px rgba(16, 16, 24, 0.16);
+  --key-inset: inset 0 -1px 0 rgba(12, 12, 20, 0.14);
+  /* surface-2 barely shows on the light background, so the active item is a raised white chip. */
+  --nav-active: #ffffff;
+  --nav-active-shadow: 0 1px 2px rgba(16, 16, 24, 0.06), 0 0 0 1px rgba(12, 12, 20, 0.06);
+  --seg-active: #ffffff;
+  --seg-active-shadow: 0 1px 2px rgba(16, 16, 24, 0.1), 0 0 0 1px rgba(12, 12, 20, 0.05);
+  --chart-bar: rgba(12, 12, 20, 0.11);
+  --chart-bar-hover: rgba(12, 12, 20, 0.28);
+  --track: rgba(12, 12, 20, 0.08);
+  --scrollbar: rgba(12, 12, 20, 0.14);
+  --scrollbar-hover: rgba(12, 12, 20, 0.24);
+  --backdrop: rgba(14, 14, 18, 0.28);
+  --glow-strength: 0.4;
+  --selection: rgba(91, 99, 230, 0.2);
+}

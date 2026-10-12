@@ -1,8 +1,0 @@
-faster-whisper>=1.2.0
-silero-vad>=5.1
-onnxruntime>=1.21.0
-PyQt6>=6.6
-pynput>=1.7
-sounddevice>=0.5
-PyYAML>=6.0
-numpy>=2.0

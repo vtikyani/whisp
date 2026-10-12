@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-motion="full">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self' 'sha256-jiPQEBZ2ogS2xbf0hQiM2nY/zZNHSL5HZd/LVPXul+Q='; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Whisp</title>
+    <script src="/js/boot.js"></script>
+    <link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/layout.css" />
+    <link rel="stylesheet" href="/css/pages.css" />
+    <script type="importmap">{"imports":{"preact":"/vendor/preact/preact.module.js","preact/hooks":"/vendor/preact/hooks.module.js","htm":"/vendor/htm/htm.module.js","@preact/signals-core":"/vendor/signals-core/signals-core.module.js","@preact/signals":"/vendor/signals/signals.module.js"}}</script>
+    <script src="/qwebchannel.js"></script>
+    <script type="module" src="/js/main.js"></script>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>
