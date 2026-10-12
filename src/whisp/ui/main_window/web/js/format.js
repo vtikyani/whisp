@@ -20,12 +20,30 @@ export function plural(count, one, many = `${one}s`) {
   return `${formatNumber(count)} ${count === 1 ? one : many}`;
 }
 
+/** `value` with `digits` decimals (0 or 1), sending exact ties to the even digit as Python's format() does. */
+function fixed(value, digits) {
+  const quarters = value * 4; // exact: a power of two
+  const tie = digits === 0 ? quarters % 4 === 2 : Number.isInteger(quarters) && quarters % 2 === 1;
+  if (!tie) return value.toFixed(digits);
+  const scale = 10 ** digits;
+  const down = Math.floor(value * scale); // exact for these values
+  return ((down % 2 === 0 ? down : down + 1) / scale).toFixed(digits);
+}
+
+/**
+ * "780 bytes", "63.4 MB", "631 MB", "1.1 GB": 1024-based, as Windows Explorer shows sizes, and written
+ * exactly like Whisp's Python side writes them (whisp.core.asr.downloads.format_size), so a download
+ * reads the same in a message and on its button.
+ */
 export function formatBytes(bytes) {
   if (!bytes && bytes !== 0) return "";
-  if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(bytes >= 1e10 ? 0 : 1)} GB`;
-  if (bytes >= 1e6) return `${Math.round(bytes / 1e6)} MB`;
-  if (bytes >= 1e3) return `${Math.round(bytes / 1e3)} KB`;
-  return `${bytes} B`;
+  let value = Math.max(0, bytes);
+  if (value < 1024) return `${Math.trunc(value)} bytes`;
+  for (const unit of ["KB", "MB", "GB", "TB"]) {
+    value /= 1024;
+    if (value < 1024 || unit === "TB") return `${fixed(value, value < 100 ? 1 : 0)} ${unit}`;
+  }
+  return "";
 }
 
 /** "2h 15m", "45m", "under a minute". */

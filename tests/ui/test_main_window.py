@@ -167,15 +167,21 @@ class FakeModels(QObject):
         super().__init__()
         self.installed = {("fast-en", "gpu")}
         self.downloads: list[tuple[str, str]] = []
+        self.running: set[str] = set()
+        """Models whose download is still going."""
 
     def is_installed(self, model_id: str, variant: str) -> bool:
         return (model_id, variant) in self.installed
+
+    def is_downloading(self, model_id: str) -> bool:
+        return model_id in self.running
 
     def install_state(self) -> dict[str, dict]:
         return {}
 
     def download(self, model_id: str, variant: str) -> None:
         self.downloads.append((model_id, variant))
+        self.running.add(model_id)
 
     def cancel(self, model_id: str) -> None:
         return None
@@ -846,6 +852,40 @@ def test_gpu_runtime_pack_install_cancel_and_events(qtbot, bridge, services) -> 
     assert events.named("gpu.failed") == [{"message": ""}]
 
 
+def test_a_finished_download_is_never_followed_by_its_last_progress(qtbot, bridge, services) -> None:
+    # Progress goes out in batches. The final update used to arrive after "models.changed" and put the page's
+    # bar back, stuck at 100% on a model that was already installed.
+    events = Events(bridge)
+    assert call(bridge, "models.download", {"id": "fast-en", "variant": "cpu"}) == {"ok": None}
+    services.models.progress.emit("fast-en", 1000, 1000)  # waiting to be sent
+    services.models.running.discard("fast-en")
+    services.models.installed.add(("fast-en", "cpu"))
+    services.models.changed.emit()
+    qtbot.wait(300)  # longer than the batching interval
+    assert [name for name, _ in events.items] == ["models.changed"]
+    listed = call_and_wait(qtbot, bridge, events, "models.list")["ok"]
+    assert next(m for m in listed["models"] if m["id"] == "fast-en")["downloading"] is False
+
+
+def test_progress_of_a_running_download_survives_other_model_changes(qtbot, bridge, services) -> None:
+    events = Events(bridge)
+    call(bridge, "models.download", {"id": "fast-en", "variant": "cpu"})
+    services.models.progress.emit("fast-en", 400, 1000)
+    services.models.changed.emit()  # e.g. another model was deleted; this download goes on
+    qtbot.waitUntil(lambda: bool(events.named("models.progress")), timeout=2000)
+    assert events.named("models.progress") == [{"id": "fast-en", "done": 400, "total": 1000}]
+
+
+def test_a_failed_download_is_never_followed_by_its_last_progress(qtbot, bridge, services) -> None:
+    events = Events(bridge)
+    call(bridge, "models.download", {"id": "fast-en", "variant": "cpu"})
+    services.models.progress.emit("fast-en", 400, 1000)
+    services.models.running.discard("fast-en")
+    services.models.download_failed.emit("fast-en", "The connection dropped.")
+    qtbot.wait(300)
+    assert [name for name, _ in events.items] == ["models.failed"]
+
+
 def test_gpu_info_reports_download_size_and_progress_state(qtbot, bridge, services) -> None:
     events = Events(bridge)
     services.asr.gpu_runtime_installing = True
@@ -980,6 +1020,49 @@ def test_scheme_handler_serves_pages_and_404s(qtbot, qapp) -> None:
         with qtbot.waitSignal(page.loadFinished, timeout=15000) as missing:
             page.load(QUrl("whisp://app/missing.html"))
         assert missing.args == [False]
+    finally:
+        page.deleteLater()
+        qtbot.wait(50)
+        profile.deleteLater()
+        qtbot.wait(50)
+
+
+@pytest.mark.skipif(not SCHEME_READY, reason="the whisp:// scheme must be registered before the QApplication exists")
+@pytest.mark.qt_log_ignore("couldn't start")  # this bare page has no web channel, so the UI reports that
+def test_the_page_writes_sizes_exactly_as_python_does(qtbot, qapp) -> None:
+    # A download's size can come from Python (the GPU card's sentence) and the page (its button): it must match.
+    from PySide6.QtWebEngineCore import QWebEnginePage, QWebEngineProfile
+
+    from whisp.core.asr import gpu
+    from whisp.core.asr.catalog import CATALOG
+    from whisp.core.asr.downloads import format_size
+    from whisp.core.llm.catalog import CATALOG as LLM_CATALOG
+
+    sizes = [0, 1, 1023, 1024, 1280, 1792, 150_000, 99_950 * 1024, 630 * 1024**2 + 512 * 1024, 5 * 1024**4]
+    sizes += [gpu.runtime_download_size()]
+    sizes += [sum(f.size for f in variant.files) for info in CATALOG for variant in info.variants]
+    sizes += [sum(f.size for f in info.files) for info in LLM_CATALOG]
+    profile = QWebEngineProfile()
+    handler = main_window.WebSchemeHandler(main_window.WebResources.bundled(), profile)
+    profile.installUrlSchemeHandler(main_window.SCHEME, handler)
+    page = QWebEnginePage(profile)
+    try:
+        with qtbot.waitSignal(page.loadFinished, timeout=15000):
+            page.load(QUrl("whisp://app/index.html"))
+        # Injected scripts have no base URL, so the module's address is spelled out.
+        page.runJavaScript(
+            "import('whisp://app/js/format.js')"
+            f".then(m => {{ window.sizes = JSON.stringify({json.dumps(sizes)}.map(m.formatBytes)); }})"
+            ".catch(e => { window.sizes = JSON.stringify({error: String(e)}); })"
+        )
+        written: list[Any] = []
+
+        def read() -> bool:
+            page.runJavaScript("window.sizes || ''", 0, written.append)
+            return bool(written and written[-1])
+
+        qtbot.waitUntil(read, timeout=5000)
+        assert json.loads(written[-1]) == [format_size(size) for size in sizes]
     finally:
         page.deleteLater()
         qtbot.wait(50)

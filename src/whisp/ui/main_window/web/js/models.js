@@ -55,6 +55,8 @@ function subscribe() {
   if (subscribed) return;
   subscribed = true;
   on("models.progress", (payload) => {
+    // Only for a download this page knows is running: an update for one that has ended would bring its bar back.
+    if (!(payload.id in downloads.value)) return;
     downloads.value = { ...downloads.value, [payload.id]: { done: payload.done, total: payload.total } };
   });
   on("models.changed", () => loadModels());

@@ -728,12 +728,23 @@ class Bridge(QObject):
         self._queue_progress("models.progress", model_id, {"id": model_id, "done": done_i, "total": total_i})
 
     def _on_models_changed(self) -> None:
-        self._model_progress.clear()
+        for model_id in list(self._model_progress):
+            if not self._services.models.is_downloading(model_id):
+                self._forget_model_progress(model_id)
         self._emit("models.changed", {})
 
     def _on_model_failed(self, model_id: str, message: str) -> None:
-        self._model_progress.pop(model_id, None)
+        self._forget_model_progress(model_id)
         self._emit("models.failed", {"id": model_id, "message": message})
+
+    def _forget_model_progress(self, model_id: str) -> None:
+        """A download ended: drop its progress, including an update still waiting to be sent.
+
+        Updates go out in batches, so the last one would otherwise reach the page after the download's end and
+        show it downloading again, at 100%.
+        """
+        self._model_progress.pop(model_id, None)
+        self._pending_progress.pop(("models.progress", model_id), None)
 
     def _on_history_added(self, entry: Any) -> None:
         self._emit("history.added", {"entry": _entry_json(entry)})
@@ -1141,7 +1152,7 @@ class Bridge(QObject):
 
     def _models_cancel(self, params: dict[str, Any]) -> None:
         model_id = _req_str(params, "id")
-        self._model_progress.pop(model_id, None)
+        self._forget_model_progress(model_id)
         self._services.models.cancel(model_id)
 
     def _models_delete(self, params: dict[str, Any]) -> _Deferred:
