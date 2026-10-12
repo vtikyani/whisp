@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Build output
+build/
+dist/
+*.spec.bak
+
+# Local data — never commit (may contain dictated text or personal settings)
+*.log
+whisp.log
+AUDIT.md
+config.yaml
+.local/
+models/
+runtime/
+
+# Editor / tool settings that are per-person
+.claude/settings.local.json
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
